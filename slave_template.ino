@@ -1,23 +1,22 @@
 /* slave_template.ino                      */
 /* I2Cのスレーブとなるモジュールのテンプレコード */
 
-#include <Wire.h>
+#include "debug.h"
+#include "dsub_slave_communicator.hpp"
 
-#define PIN_GOAL        4    //ゴール判定用ピン
-#define PIN_HIT         5    //当たった判定用ピン
-#define PIN_GOAL_SENSOR 6    //通過/ゴールしたことを検知するセンサのピン
-#define PIN_HIT_SENSOR  7    //当たったことを検知するセンサのピン
-#define MASTER_BEGIN_TRANS 0 //通信を開始すること
-#define MASTER_DETECT_HIT  1 //HITを受信したこと
-#define MASTER_DETECT_GOAL 2 //通過/ゴールを受信したこと
-#define PIN_DIP_0          6 //DIPスイッチbit0
-#define PIN_DIP_1          7 //DIPスイッチbit1
-#define PIN_DIP_2          8 //DIPスイッチbit2
-#define PIN_DIP_3          9 //DIPスイッチbit3        
+#define PIN_GOAL            4   //ゴール判定用ピン
+#define PIN_HIT             5   //当たった判定用ピン
+#define PIN_GOAL_SENSOR     6   //通過/ゴールしたことを検知するセンサのピン
+#define PIN_HIT_SENSOR      7   //当たったことを検知するセンサのピン
+#define PIN_DIP_0           6   //DIPスイッチbit0
+#define PIN_DIP_1           7   //DIPスイッチbit1
+#define PIN_DIP_2           8   //DIPスイッチbit2
+#define PIN_DIP_3           9   //DIPスイッチbit3
 
 /* 変数宣言 */
 unsigned char active = 0; //0のときこのモジュール内にいない/1のときこのモジュール内にいる
 unsigned char slv_address; //スレーブアドレス(0はゴールモジュール固定、それ以外は1~)
+DsubSlaveCommunicator *dsubSlaveCommunicator = NULL;
 
 void setup(void) {
   /* ここから各スレーブ共通コード */
@@ -31,7 +30,10 @@ void setup(void) {
   pinMode(PIN_DIP_3, INPUT);
   
   slv_address = ReadDipSwitch(); //SLVアドレスを設定
-  Wire.begin(slv_address);     //スレーブアドレスをslv_addressとしてI2C開始
+  /* D-sub通信管理用インスタンスの生成 */
+  dsubSlaveCommunicator = new DsubSlaveCommunicator(PIN_GOAL_SENSOR, PIN_HIT_SENSOR,
+                                                    PIN_GOAL, PIN_HIT, slv_address);
+  //Wire.begin(slv_address);     //スレーブアドレスをslv_addressとしてI2C開始
   /* ここまで各スレーブ共通コード */
 
   /* ここから各モジュール独自コード */
@@ -41,39 +43,14 @@ void setup(void) {
 
 void loop(void) {
   /* ここから各スレーブ共通コード */
-  if(active == 0) {
-    if(Wire.read() == MASTER_BEGIN_TRANS) {
-      active = 1;
-      pinMode(PIN_GOAL, OUTPUT); //通過/ゴール判定ピンを出力に設定　
-      pinMode(PIN_HIT, OUTPUT); //当たった判定ピンを出力に設定
-      digitalWrite(PIN_GOAL, LOW);
-      digitalWrite(PIN_HIT, LOW);
-    }
-  } else {
-    /* 通過/ゴールを検知したとき */
-    if(digitalRead(PIN_GOAL_SENSOR) == HIGH) {
-      digitalWrite(PIN_GOAL, HIGH);
-      /* マスタがHIGHを検知したらそのことをメッセージで送信するので、受信するまで待機する */
-      while(Wire.read() == MASTER_DETECT_GOAL) {}
-      /* 通過/ゴール判定ピン、当たった判定ピンをLOWにしてから入力に切り替える */
-      digitalWrite(PIN_GOAL, LOW);
-      digitalWrite(PIN_HIT, LOW);
-      pinMode(PIN_GOAL, INPUT);
-      pinMode(PIN_HIT, INPUT);
-      active = 0;
-    }
-    /* 当たったことを検知したとき */
-    if(digitalRead(PIN_HIT_SENSOR) == HIGH) {
-      digitalWrite(PIN_HIT, HIGH);
-      /* マスタがHIGHを検知したらそのことをメッセージで送信するので、受信するまで待機する */
-      while(Wire.read() == MASTER_DETECT_HIT) {}
-      digitalWrite(PIN_HIT, LOW);
-    }
-  /* ここまで各モジュール共通コード */
+  if(DsubSlaveCommunicator::is_active()){
+    //D-sub関係イベント処理
+    dsubSlaveCommunicator->handle_dsub_event();
 
-  /* ここから各モジュール独自コード */
+    /* 各モジュール独自コードはここに書いてください */
+    //hoge = fuga;
 
-  /* ここまで各モジュール独自コード */
+    /* 各モジュール独自コードここまで */
   }
 }
 
