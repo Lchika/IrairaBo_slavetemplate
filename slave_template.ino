@@ -4,12 +4,12 @@
 #include "debug.h"
 #include "dsub_slave_communicator.hpp"
 
-#define PIN_GOAL_SENSOR     6   //通過/ゴールしたことを検知するセンサのピン
-#define PIN_HIT_SENSOR      7   //当たったことを検知するセンサのピン
-#define PIN_DIP_0           6   //DIPスイッチbit0
-#define PIN_DIP_1           7   //DIPスイッチbit1
-#define PIN_DIP_2           8   //DIPスイッチbit2
-#define PIN_DIP_3           9   //DIPスイッチbit3
+#define PIN_GOAL_SENSOR     4   //  通過/ゴールしたことを検知するセンサのピン
+#define PIN_HIT_SENSOR      5   //  当たったことを検知するセンサのピン
+#define PIN_DIP_0           6   //  DIPスイッチbit0
+#define PIN_DIP_1           7   //  DIPスイッチbit1
+#define PIN_DIP_2           8   //  DIPスイッチbit2
+#define PIN_DIP_3           9   //  DIPスイッチbit3
 
 /* 変数宣言 */
 unsigned char slv_address;      //  スレーブアドレス(0はゴールモジュール固定、それ以外は1~)
@@ -24,10 +24,9 @@ void setup(void) {
   pinMode(PIN_DIP_2, INPUT);
   pinMode(PIN_DIP_3, INPUT);
   
-  slv_address = ReadDipSwitch(); //SLVアドレスを設定
+  slv_address = ReadDipSwitch();    //  SLVアドレスを設定
   /* D-sub通信管理用インスタンスの生成 */
   dsubSlaveCommunicator = new DsubSlaveCommunicator(PIN_GOAL_SENSOR, PIN_HIT_SENSOR, slv_address);
-  //Wire.begin(slv_address);     //スレーブアドレスをslv_addressとしてI2C開始
   /* ここまで各スレーブ共通コード */
 
   /* ここから各モジュール独自コード */
