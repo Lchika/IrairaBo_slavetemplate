@@ -43,3 +43,12 @@
   ```
   - コース接触判定、モジュール通過判定もここで行っている
   - この関数は定期的に呼ぶ必要がある
+
+## コンパイル時の注意事項
+
+- 以下の外部ライブラリが必要
+  - [ArduinoSTL](https://www.arduinolibraries.info/libraries/arduino-stl)
+    - c++の標準ライブラリが使えるようになる
+      - c++の標準ライブラリ(STL)については[Wikipedia](https://ja.wikipedia.org/wiki/Standard_Template_Library)参照
+    - [こちらのページ](https://www.arduinolibraries.info/libraries/arduino-stl)から`ArduinoSTL-1.1.0.zip`をダウンロード
+    - 解凍したフォルダを`C:\Users\your-username\Documents\Arduino\libraries`(特に設定変えていなければここでよいはず)に置く
