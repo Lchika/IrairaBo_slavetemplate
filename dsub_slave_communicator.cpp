@@ -3,6 +3,12 @@
 #include <Wire.h>
 #include <Arduino.h>
 
+static const int I2C_BEGIN_TRANS    = 0;     // 通信開始通知
+static const int I2C_DETECT_HIT     = 1;     // コース接触通知確認通知
+static const int I2C_DETECT_GOAL    = 2;     // コース通過通知確認通知
+static const int I2C_CHECK_CONNECT  = 3;     // 疎通確認
+static const int I2C_EMPTY          = 99;
+
 bool DsubSlaveCommunicator::_active = false;
 char DsubSlaveCommunicator::dprint_buff[128];
 std::queue<int> DsubSlaveCommunicator::message_que;
@@ -79,7 +85,7 @@ bool DsubSlaveCommunicator::handle_dsub_event(void)
   //  ゴール検知したとき
   if(goalDetecter->is_event_detected()){
     DebugPrint("goal detected");
-    message_que.push(2);
+    message_que.push(I2C_DETECT_GOAL);
     _active = false;
   }
 
@@ -89,7 +95,7 @@ bool DsubSlaveCommunicator::handle_dsub_event(void)
     if((now_time - last_hit_time) > INTERVAL_DETECT_HIT_MS){
       DebugPrint("hit detected");
       last_hit_time = millis();
-      message_que.push(1);
+      message_que.push(I2C_DETECT_HIT);
     }else{
       DebugPrint("hit detected(ignore)")
     }
@@ -153,9 +159,16 @@ void DsubSlaveCommunicator::handle_i2c_message(int byte_num){
     DebugPrint("got i2c massage");
     byte received_massage = Wire.read();
     switch(received_massage){
+      //  I2C通信開始
       case I2C_BEGIN_TRANS:
         DebugPrint("this module active");
         _active = true;
+        break;
+      
+      //  疎通確認
+      case I2C_CHECK_CONNECT:
+        DebugPrint("check i2c connect");
+        message_que.push(I2C_CHECK_CONNECT);
         break;
       
       default:
