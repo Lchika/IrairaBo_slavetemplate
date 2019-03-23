@@ -53,3 +53,7 @@
     - インストール方法
       - [こちらのページ](https://www.arduinolibraries.info/libraries/arduino-stl)から`ArduinoSTL-1.1.0.zip`をダウンロード
       - 解凍したフォルダを`C:\Users\your-username\Documents\Arduino\libraries`(特に設定変えていなければここでよいはず)に置く
+
+## 本プログラムのマニュアルについて
+- 本プログラムは[Doxygen](http://www.doxygen.nl/index.html)を使ってドキュメント化しています
+- マニュアルを見るにはプログラムダウンロード後、html/index.htmlをブラウザで開いてください
