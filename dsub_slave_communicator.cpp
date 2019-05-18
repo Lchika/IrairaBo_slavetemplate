@@ -50,7 +50,8 @@ DsubSlaveCommunicator::DsubSlaveCommunicator
   //  イベント検知インスタンス生成
   goalDetecter = new FuncEventDetecter(f_detect_goal);
   hitDetecter = new FuncEventDetecter(f_detect_hit);
-  DsubSlaveCommunicator::setup_i2c(adress);
+  this->setup_i2c(adress);
+  _active = false;
 };
 
 /**
